@@ -8,19 +8,21 @@ const initialState = {
     isError: false,
 };
 
-//login 
+//login
 export const login = createAsyncThunk('login', async (params, thunkApi) => {
-    console.log(" file : authSlice.js ~ login ~ params", params);
     try {
         const response = await API.post('auth/login', params);
-        console.log('====================== response : ', response);
-
-        return response.data
-        // return thunkApi.fulfillWithValue('');
+        return response.data;
     } catch (error) {
-        console.log("eror : ", error);
         return thunkApi.rejectWithValue(error);
     }
+});
+
+//logout action
+export const logout = createAsyncThunk('logout', (thunkApi) => {
+    // Optionally, you can make an API call to log the user out from the backend.
+    // But for now, we just clear the user data from the Redux store.
+    return null;
 });
 
 const authSlice = createSlice({
@@ -28,24 +30,25 @@ const authSlice = createSlice({
     initialState,
     reducers: {},
     extraReducers: (builder) => {
-        //login cases
-        builder.addCase(login.pending, (state)=>{
-            state.isLoading = true;
-        });
-        builder.addCase(login.fulfilled, (state, action)=>{
-            state.isLoading = false;
-            state.isSuccess =  true;
-            state.userData = action.payload;
-        });
-        builder.addCase(login.rejected, (state, action)=>{
-            state.isLoading = false;
-            state.isError = true;
-        })
+        builder
+            // login cases
+            .addCase(login.pending, (state) => {
+                state.isLoading = true;
+            })
+            .addCase(login.fulfilled, (state, action) => {
+                state.isLoading = false;
+                state.isSuccess = true;
+                state.userData = action.payload;
+            })
+            .addCase(login.rejected, (state) => {
+                state.isLoading = false;
+                state.isError = true;
+            })
+            // logout case
+            .addCase(logout.fulfilled, (state) => {
+                state.userData = null;
+            });
     },
-})
-
+});
 
 export default authSlice.reducer;
-
-
-

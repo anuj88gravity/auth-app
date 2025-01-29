@@ -1,20 +1,20 @@
-import { Button, StyleSheet, Text, TextInput, View } from 'react-native'
+import { Button, StyleSheet, Text, TextInput, View, Alert } from 'react-native'
 import React, { useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux';
 import { login } from '../../redux/features/auth/authSlice';
+import { useNavigation } from '@react-navigation/native';
 
 const LoginScreen = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
 
-    //hooks
+    // hooks
     const dispatch = useDispatch();
-    const { userData, isLoading } = useSelector(state => state.auth);
+    const navigation = useNavigation();
+    const { userData, isLoading, error } = useSelector(state => state.auth); // add error state
     console.log('login=============== user data ', userData);
 
-
-
-    //functions
+    // Function to handle login
     const handlingLogin = () => {
         const params = {
             username: email,
@@ -24,10 +24,21 @@ const LoginScreen = () => {
         dispatch(login(params));
     };
 
+    // Watch for login success or error
+    React.useEffect(() => {
+        if (userData) {
+            console.log('Login Successful', userData);
+            navigation.navigate('CounterScreen'); // Replace with actual screen name
+        }
 
+        if (error) {
+            console.error('Login failed: ', error);
+            Alert.alert('Error', error, [{ text: 'OK' }]);
+        }
+    }, [userData, error, navigation]);
 
     return (
-        <View>
+        <View style={styles.container}>
             <Text>Login</Text>
             <TextInput
                 value={email}
@@ -35,7 +46,7 @@ const LoginScreen = () => {
                 onChangeText={setEmail}
                 placeholderTextColor="grey"
                 autoCapitalize='none'
-
+                style={styles.input}
             />
             <TextInput
                 value={password}
@@ -43,17 +54,33 @@ const LoginScreen = () => {
                 onChangeText={setPassword}
                 placeholderTextColor="grey"
                 autoCapitalize='none'
+                style={styles.input}
+                secureTextEntry // Hide password text
             />
             <Button
-                isLoading={isLoading}
-                title='Login'
+                title={isLoading ? 'Loading...' : 'Login'}
                 onPress={handlingLogin}
+                disabled={isLoading} // Disable button when loading
             />
-
         </View>
-    )
-}
+    );
+};
 
-export default LoginScreen
+const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        padding: 16,
+    },
+    input: {
+        width: '100%',
+        height: 40,
+        borderColor: 'grey',
+        borderWidth: 1,
+        marginBottom: 12,
+        paddingLeft: 8,
+    }
+});
 
-const styles = StyleSheet.create({})
+export default LoginScreen;
